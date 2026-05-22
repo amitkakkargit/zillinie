@@ -14,6 +14,25 @@ export function getProducts() {
   return api.get("/products").then((res) => res.data);
 }
 
+export function saveProduct(product: any) {
+  return api.post("/products", product).then((res) => res.data);
+}
+
+export function updateProductStock(
+  productId: number,
+  usedQuantity: number,
+  orderNumber: string,
+) {
+  return api
+    .post(`/products/${productId}/stock`, {
+      ProductID: productId,
+      UsedQuantity: usedQuantity,
+      OrderNumber: orderNumber,
+      CreatedBy: "System",
+    })
+    .then((res) => res.data);
+}
+
 export function getProductStock(productId: number) {
   return api.get(`/products/${productId}/stock`).then((res) => res.data);
 }
@@ -24,6 +43,10 @@ export function getOrders(search = "") {
 
 export function getOrder(orderNumber: string) {
   return api.get(`/orders/${orderNumber}`).then((res) => res.data);
+}
+
+export function getInvoice(orderNumber: string) {
+  return getOrder(orderNumber);
 }
 
 export function getPayments(orderId: number) {
@@ -42,4 +65,12 @@ export function getStatus(orderNumber: string) {
   return api
     .get("/status", { params: { orderNumber } })
     .then((res) => res.data);
+}
+
+export function saveMeasurement(data: any) {
+  return api.post("/measurements", data).then((res) => res.data);
+}
+
+export function getLookupData() {
+  return api.get("/lookups").then((res) => res.data);
 }
