@@ -22,6 +22,10 @@ import ManageProducts from "./pages/ManageProducts";
 import MeasurementNew from "./pages/MeasurementNew";
 import MeasurementDetails from "./pages/MeasurementDetails";
 import ProductEdit from "./pages/ProductEdit";
+import StockUsage from "./pages/StockUsage";
+import ProductHistory from "./pages/ProductHistory";
+import QRScanner from "./pages/QRScanner";
+import FetchDataFromImage from "./pages/FetchDataFromImage";
 import "./App.css";
 
 function RequireAuth({ children }: { children: JSX.Element }) {
@@ -70,6 +74,10 @@ function App() {
               <Link to="/staff">Staff</Link>
               <Link to="/status">Status</Link>
               <Link to="/lookups">Lookups</Link>
+              <Link to="/stock-usage">Stock Usage</Link>
+              <Link to="/product-history">Product History</Link>
+              <Link to="/qr-scanner">QR Scanner</Link>
+              <Link to="/fetch-from-image">OCR Measurements</Link>
               <button className="logout-button" onClick={handleLogout}>
                 Logout
               </button>
@@ -243,6 +251,38 @@ function App() {
             element={
               <RequireAuth>
                 <Lookups />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/stock-usage"
+            element={
+              <RequireAuth>
+                <StockUsage />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/product-history"
+            element={
+              <RequireAuth>
+                <ProductHistory />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/qr-scanner"
+            element={
+              <RequireAuth>
+                <QRScanner />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/fetch-from-image"
+            element={
+              <RequireAuth>
+                <FetchDataFromImage />
               </RequireAuth>
             }
           />

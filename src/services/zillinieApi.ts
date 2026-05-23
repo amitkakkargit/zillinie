@@ -104,3 +104,50 @@ export function logout() {
 export function getLookupData() {
   return api.get("/lookups").then((res) => res.data);
 }
+
+export function getStockUsageList() {
+  return api.get("/products/0/stock").then((res) => res.data);
+}
+
+export function deductStock(productId: number, usedQuantity: number, orderNumber: string) {
+  return api
+    .post(`/products/${productId}/stock`, {
+      ProductID: productId,
+      UsedQuantity: usedQuantity,
+      OrderNumber: orderNumber,
+      CreatedBy: "System",
+    })
+    .then((res) => res.data);
+}
+
+export function getProductsByOrderNumber(orderNumber: string) {
+  return api.get(`/products/by-order/${orderNumber}`).then((res) => res.data);
+}
+
+export function getProductHistory(productId: string) {
+  return api.get(`/products/${productId}/history`).then((res) => res.data);
+}
+
+export function getProductByQR(code: string) {
+  return api.get(`/products/qr/${encodeURIComponent(code)}`).then((res) => res.data);
+}
+
+export function updateStockQuantity(
+  productId: number,
+  quantity: number,
+  transactionType: string,
+  remarks: string,
+  createdBy: string,
+) {
+  return api
+    .put(`/products/${productId}/stock-quantity`, { Quantity: quantity, TransactionType: transactionType, Remarks: remarks, CreatedBy: createdBy })
+    .then((res) => res.data);
+}
+
+export function extractMeasurementsFromImage(formData: FormData) {
+  return api
+    .post("/ocr/extract-measurements", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    })
+    .then((res) => res.data);
+}
