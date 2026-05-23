@@ -1,3 +1,93 @@
+import { useState, useRef } from "react";
+import { getInvoice } from "../services/zillinieApi";
+
+function Invoice() {
+  const [orderNumber, setOrderNumber] = useState("");
+  const [rows, setRows] = useState<any[]>([]);
+  const [error, setError] = useState("");
+  const printRef = useRef<HTMLDivElement | null>(null);
+
+  const load = async () => {
+    setError("");
+    setRows([]);
+    if (!orderNumber.trim()) {
+      setError("Enter order number");
+      return;
+    }
+    try {
+      const data = await getInvoice(orderNumber.trim());
+      if (Array.isArray(data) && data.length > 0) {
+        setRows(data);
+      } else {
+        setError("No invoice data found");
+      }
+    } catch (e) {
+      console.error(e);
+      setError("Failed to load invoice");
+    }
+  };
+
+  const doPrint = () => {
+    if (!printRef.current) return;
+    const w = window.open("", "_blank", "width=800,height=600");
+    if (!w) return;
+    w.document.write(
+      `<!doctype html><html><head><title>Invoice ${orderNumber}</title>`,
+    );
+    w.document.write(
+      `<style>table{width:100%;border-collapse:collapse}th,td{border:1px solid #ccc;padding:6px}</style>`,
+    );
+    w.document.write("</head><body>");
+    w.document.write(printRef.current.innerHTML);
+    w.document.write("</body></html>");
+    w.document.close();
+    w.focus();
+    setTimeout(() => w.print(), 250);
+  };
+
+  return (
+    <div className="page invoice-page">
+      <h1>Invoice</h1>
+      <div className="field-group">
+        <label>Order number</label>
+        <input
+          value={orderNumber}
+          onChange={(e) => setOrderNumber(e.target.value)}
+        />
+        <button onClick={load}>Load</button>
+        <button onClick={doPrint} disabled={rows.length === 0}>
+          Print
+        </button>
+      </div>
+      {error && <p className="error-message">{error}</p>}
+
+      <div ref={printRef}>
+        {rows.length > 0 && (
+          <table>
+            <thead>
+              <tr>
+                {Object.keys(rows[0]).map((k) => (
+                  <th key={k}>{k}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((r, i) => (
+                <tr key={i}>
+                  {Object.keys(rows[0]).map((k) => (
+                    <td key={k}>{String(r[k] ?? "-")}</td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export default Invoice;
 import { useState } from "react";
 import { getInvoice } from "../services/zillinieApi";
 

@@ -6,6 +6,12 @@ export function getDashboardSummary(user?: string) {
     .then((res) => res.data);
 }
 
+export function login(username: string, password: string) {
+  return api
+    .post("/auth/login", { username, password })
+    .then((res) => res.data.user);
+}
+
 export function getCustomers() {
   return api.get("/customers").then((res) => res.data);
 }
@@ -45,6 +51,10 @@ export function getOrder(orderNumber: string) {
   return api.get(`/orders/${orderNumber}`).then((res) => res.data);
 }
 
+export function createOrder(data: any) {
+  return api.post(`/orders`, data).then((res) => res.data);
+}
+
 export function getInvoice(orderNumber: string) {
   return getOrder(orderNumber);
 }
@@ -69,6 +79,10 @@ export function getStatus(orderNumber: string) {
 
 export function saveMeasurement(data: any) {
   return api.post("/measurements", data).then((res) => res.data);
+}
+
+export function getMeasurementDetails(orderNumber: string) {
+  return api.get(`/measurements/${orderNumber}`).then((res) => res.data);
 }
 
 export function getLookupData() {

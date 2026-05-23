@@ -90,3 +90,19 @@ tbody td {
   padding: 0.75rem;
   border-bottom: 1px solid #e2e8f0;
 }
+
+.app-header nav button,
+.app-header nav a {
+  color: white;
+  margin-left: 1rem;
+}
+
+.logout-button {
+  border: none;
+  background: transparent;
+  color: white;
+  cursor: pointer;
+  font: inherit;
+  margin-left: 1rem;
+  padding: 0;
+}
