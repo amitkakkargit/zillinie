@@ -12,6 +12,7 @@ import Staff from "./pages/Staff";
 import Status from "./pages/Status";
 import Lookups from "./pages/Lookups";
 import Measurement from "./pages/Measurement";
+import MeasurementsList from "./pages/MeasurementsList";
 import Invoice from "./pages/Invoice";
 import NotFound from "./pages/NotFound";
 import Print1 from "./pages/Print1";
@@ -64,6 +65,8 @@ function App() {
               <Link to="/products/edit">Edit Product</Link>
               <Link to="/measurements/new">New Measurement</Link>
               <Link to="/measurements/details">Measurement Details</Link>
+              <Link to="/measurements">Measurements</Link>
+              <Link to="/measurements/list">Measurements List</Link>
               <Link to="/staff">Staff</Link>
               <Link to="/status">Status</Link>
               <Link to="/measurements">Measurement</Link>
@@ -201,6 +204,14 @@ function App() {
             element={
               <RequireAuth>
                 <MeasurementNew />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/measurements/list"
+            element={
+              <RequireAuth>
+                <MeasurementsList />
               </RequireAuth>
             }
           />

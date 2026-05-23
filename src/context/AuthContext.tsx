@@ -32,8 +32,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (user) {
       localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(user));
+      if (user.sessionToken) {
+        api.defaults.headers.common["x-session-token"] = user.sessionToken;
+      }
     } else {
       localStorage.removeItem(AUTH_STORAGE_KEY);
+      delete api.defaults.headers.common["x-session-token"];
     }
   }, [user]);
 
@@ -49,7 +53,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return authUser;
   };
 
-  const signOut = () => {
+  const signOut = async () => {
+    try {
+      await api.post("/auth/logout");
+    } catch (e) {
+      // ignore errors
+    }
     // remove session token header
     delete api.defaults.headers.common["x-session-token"];
     setUser(null);

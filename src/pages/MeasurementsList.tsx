@@ -1,24 +1,27 @@
 import { useEffect, useState } from "react";
-import api from "../services/api";
+import { getMeasurementList } from "../services/zillinieApi";
 
 function MeasurementsList() {
   const [rows, setRows] = useState<any[]>([]);
 
+  const loadMeasurements = async () => {
+    try {
+      const data = await getMeasurementList();
+      setRows(data ?? []);
+    } catch (e) {
+      console.error(e);
+      setRows([]);
+    }
+  };
+
   useEffect(() => {
-    (async () => {
-      try {
-        const res = await api.get("/measurements/list");
-        setRows(res.data ?? []);
-      } catch (e) {
-        console.error(e);
-        setRows([]);
-      }
-    })();
+    void loadMeasurements();
   }, []);
 
   return (
     <div className="page measurements-list">
       <h1>Measurements</h1>
+      <button onClick={loadMeasurements}>Refresh</button>
       {rows.length === 0 ? (
         <p>No measurements found.</p>
       ) : (

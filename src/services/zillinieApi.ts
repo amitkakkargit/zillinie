@@ -81,8 +81,16 @@ export function saveMeasurement(data: any) {
   return api.post("/measurements", data).then((res) => res.data);
 }
 
+export function getMeasurementList() {
+  return api.get("/measurements/list").then((res) => res.data);
+}
+
 export function getMeasurementDetails(orderNumber: string) {
   return api.get(`/measurements/${orderNumber}`).then((res) => res.data);
+}
+
+export function logout() {
+  return api.post("/auth/logout").then((res) => res.data);
 }
 
 export function getLookupData() {
