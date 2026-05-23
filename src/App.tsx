@@ -69,7 +69,6 @@ function App() {
               <Link to="/measurements/list">Measurements List</Link>
               <Link to="/staff">Staff</Link>
               <Link to="/status">Status</Link>
-              <Link to="/measurements">Measurement</Link>
               <Link to="/lookups">Lookups</Link>
               <button className="logout-button" onClick={handleLogout}>
                 Logout

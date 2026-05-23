@@ -1,14 +1,31 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { getInvoice } from "../services/zillinieApi";
 
 function Invoice() {
+  const [searchParams] = useSearchParams();
   const [orderNumber, setOrderNumber] = useState("");
   const [invoiceItems, setInvoiceItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const loadInvoice = async () => {
-    if (!orderNumber.trim()) {
+  const normalizeRows = (data: any): any[] => {
+    if (Array.isArray(data)) return data;
+    if (data && typeof data === "object") return [data];
+    return [];
+  };
+
+  useEffect(() => {
+    const orderParam = searchParams.get("orderNumber");
+    if (orderParam) {
+      setOrderNumber(orderParam);
+      void loadInvoice(orderParam);
+    }
+  }, [searchParams]);
+
+  const loadInvoice = async (overrideOrderNumber?: string) => {
+    const orderToLoad = overrideOrderNumber ?? orderNumber;
+    if (!orderToLoad.trim()) {
       setError("Enter an order number to load invoice data.");
       return;
     }
@@ -18,8 +35,8 @@ function Invoice() {
     setInvoiceItems([]);
 
     try {
-      const items = await getInvoice(orderNumber.trim());
-      if (!Array.isArray(items) || items.length === 0) {
+      const items = normalizeRows(await getInvoice(orderToLoad.trim()));
+      if (items.length === 0) {
         setError("No invoice data found for this order.");
       } else {
         setInvoiceItems(items);
@@ -31,14 +48,31 @@ function Invoice() {
     }
   };
 
-  const subtotal = invoiceItems.reduce((sum, item) => {
-    const amount = Number(
-      item.Amount ?? item.TotalAmount ?? item.AmountDue ?? 0,
-    );
-    return sum + (Number.isFinite(amount) ? amount : 0);
-  }, 0);
+  const invoiceFields = useMemo(
+    () => (invoiceItems[0] ? Object.keys(invoiceItems[0]) : []),
+    [invoiceItems],
+  );
 
-  const invoiceFields = invoiceItems[0] ? Object.keys(invoiceItems[0]) : [];
+  const subtotal = useMemo(() => {
+    return invoiceItems.reduce((sum, item) => {
+      const quantity = Number(
+        item.Quantity ?? item.Qty ?? item.QuantitySold ?? 1,
+      );
+      const price = Number(
+        item.UnitPrice ?? item.Price ?? item.Amount ?? item.TotalAmount ?? 0,
+      );
+      const lineTotal = Number.isFinite(quantity * price)
+        ? quantity * price
+        : 0;
+      return sum + lineTotal;
+    }, 0);
+  }, [invoiceItems]);
+
+  const invoiceTitle = invoiceItems[0]?.OrderNumber ?? orderNumber;
+  const customerName =
+    invoiceItems[0]?.CustomerName || invoiceItems[0]?.Customer || "";
+  const orderDate =
+    invoiceItems[0]?.OrderDate || invoiceItems[0]?.CreatedDate || "";
 
   return (
     <div className="page invoice-page">
@@ -49,7 +83,7 @@ function Invoice() {
           placeholder="Order number"
           onChange={(e) => setOrderNumber(e.target.value)}
         />
-        <button onClick={loadInvoice} disabled={loading}>
+        <button onClick={() => void loadInvoice()} disabled={loading}>
           {loading ? "Loading..." : "Load invoice"}
         </button>
       </div>
@@ -58,7 +92,14 @@ function Invoice() {
 
       {invoiceItems.length > 0 && (
         <section className="invoice-result">
-          <h2>Invoice for {orderNumber}</h2>
+          <div className="invoice-header">
+            <h2>Invoice {invoiceTitle}</h2>
+            {customerName && <p>Customer: {customerName}</p>}
+            {orderDate && <p>Date: {orderDate}</p>}
+            <p>
+              <strong>Lines:</strong> {invoiceItems.length}
+            </p>
+          </div>
           <table>
             <thead>
               <tr>

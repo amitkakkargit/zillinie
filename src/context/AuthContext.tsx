@@ -1,6 +1,9 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import api from "../services/api";
-import { login as apiLogin } from "../services/zillinieApi";
+import {
+  login as apiLogin,
+  logout as apiLogout,
+} from "../services/zillinieApi";
 
 export interface AuthUser {
   id: number;
@@ -55,7 +58,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     try {
-      await api.post("/auth/logout");
+      await apiLogout();
     } catch (e) {
       // ignore errors
     }

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import api from "../services/api";
+import { getCustomers } from "../services/zillinieApi";
 
 interface Customer {
   id: number;
@@ -15,9 +15,8 @@ function Customers() {
 
   useEffect(() => {
     setLoading(true);
-    api
-      .get("/customers")
-      .then((response) => setCustomers(response.data))
+    getCustomers()
+      .then((response) => setCustomers(response ?? []))
       .catch(() => setError("Could not load customers."))
       .finally(() => setLoading(false));
   }, []);

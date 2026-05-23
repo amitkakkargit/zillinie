@@ -2,16 +2,18 @@ import { useState, useEffect } from "react";
 import {
   getProducts,
   updateProductStock,
-  saveProduct,
   getCustomers,
+  createOrder,
 } from "../services/zillinieApi";
-import { createOrder } from "../services/zillinieApi";
 
 function POSNext() {
   const [products, setProducts] = useState<any[]>([]);
   const [cart, setCart] = useState<any[]>([]);
   const [customers, setCustomers] = useState<any[]>([]);
   const [selectedCustomer, setSelectedCustomer] = useState<number | null>(null);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -39,8 +41,8 @@ function POSNext() {
         ...cart,
         {
           productId: product.ProductID ?? product.id,
-          name: product.Name ?? product.ProductName,
-          price: product.Price ?? 0,
+          name: product.ProductName ?? product.Name,
+          price: Number(product.Price ?? product.price ?? 0),
           quantity: 1,
         },
       ]);
@@ -48,31 +50,49 @@ function POSNext() {
   };
 
   const create = async () => {
-    const items = cart.map((c) => ({
-      productId: c.productId,
-      quantity: c.quantity,
-      price: c.price,
-    }));
-    const total = items.reduce((s, it) => s + it.price * it.quantity, 0);
-    const payload = { customerId: selectedCustomer, items, total };
-    const res = await createOrder(payload);
-    if (res?.orderId) {
-      // optionally update stock per item
-      for (const it of items) {
-        try {
-          await updateProductStock(
-            it.productId,
-            it.quantity,
-            res.orderNumber ?? "",
-          );
-        } catch (e) {
-          // ignore
+    setError("");
+    setSuccess("");
+    if (!selectedCustomer) {
+      setError("Please select a customer before creating an order.");
+      return;
+    }
+    if (cart.length === 0) {
+      setError("Add at least one product to the cart.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const items = cart.map((c) => ({
+        productId: c.productId,
+        quantity: c.quantity,
+        price: c.price,
+      }));
+      const total = items.reduce((s, it) => s + it.price * it.quantity, 0);
+      const payload = { customerId: selectedCustomer, items, total };
+      const res = await createOrder(payload);
+      if (res?.orderId) {
+        for (const it of items) {
+          try {
+            await updateProductStock(
+              it.productId,
+              it.quantity,
+              res.orderNumber ?? "",
+            );
+          } catch {
+            // ignore stock update failures for now
+          }
         }
+        setCart([]);
+        setSuccess(`Order created successfully: ${res.orderNumber}`);
+      } else {
+        setError("Order creation failed.");
       }
-      setCart([]);
-      alert(`Order created: ${res.orderNumber}`);
-    } else {
-      alert("Order creation failed");
+    } catch (e) {
+      console.error(e);
+      setError("Order creation failed.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -93,6 +113,8 @@ function POSNext() {
           ))}
         </select>
       </div>
+      {error && <p className="error-message">{error}</p>}
+      {success && <p className="success-message">{success}</p>}
 
       <section>
         <h2>Products</h2>

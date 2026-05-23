@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { getOrders, getOrder } from "../services/zillinieApi";
 
 function Orders() {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [orders, setOrders] = useState<any[]>([]);
   const [orderDetail, setOrderDetail] = useState<any[]>([]);
@@ -57,20 +59,68 @@ function Orders() {
           </tr>
         </thead>
         <tbody>
-          {orders.map((order) => (
-            <tr key={order.OrderNumber ?? order.id ?? JSON.stringify(order)}>
-              {Object.values(order).map((value, index) => (
-                <td key={index}>{String(value)}</td>
-              ))}
-              <td>
-                {order.OrderNumber && (
-                  <button onClick={() => showOrder(order.OrderNumber)}>
-                    View details
-                  </button>
-                )}
-              </td>
-            </tr>
-          ))}
+          {orders.map((order) => {
+            const orderNumber =
+              order.OrderNumber ?? order.OrderNo ?? order.OrderID ?? "";
+            return (
+              <tr key={orderNumber || JSON.stringify(order)}>
+                {Object.values(order).map((value, index) => (
+                  <td key={index}>{String(value)}</td>
+                ))}
+                <td>
+                  {orderNumber && (
+                    <>
+                      <button onClick={() => showOrder(String(orderNumber))}>
+                        View
+                      </button>
+                      <button
+                        onClick={() =>
+                          navigate(
+                            `/invoice?orderNumber=${encodeURIComponent(
+                              String(orderNumber),
+                            )}`,
+                          )
+                        }
+                      >
+                        Invoice
+                      </button>
+                      <button
+                        onClick={() =>
+                          navigate(
+                            `/print1?orderNumber=${encodeURIComponent(
+                              String(orderNumber),
+                            )}`,
+                          )
+                        }
+                      >
+                        Print
+                      </button>
+                      <button
+                        onClick={() =>
+                          navigate(
+                            `/print2?orderNumber=${encodeURIComponent(
+                              String(orderNumber),
+                            )}`,
+                          )
+                        }
+                      >
+                        Receipt
+                      </button>
+                    </>
+                  )}
+                  {order.OrderId ? (
+                    <button
+                      onClick={() =>
+                        navigate(`/payments?orderId=${order.OrderId}`)
+                      }
+                    >
+                      Payments
+                    </button>
+                  ) : null}
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
 

@@ -6,9 +6,16 @@ function Account() {
   const [orderItems, setOrderItems] = useState<any[]>([]);
   const [payments, setPayments] = useState<any[]>([]);
   const [orderId, setOrderId] = useState<number | null>(null);
+  const [balance, setBalance] = useState<number | null>(null);
   const [amountPaid, setAmountPaid] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+
+  const normalizeRows = (data: any): any[] => {
+    if (Array.isArray(data)) return data;
+    if (data && typeof data === "object") return [data];
+    return [];
+  };
 
   const loadOrder = async () => {
     setError("");
@@ -23,12 +30,16 @@ function Account() {
     }
 
     try {
-      const data = await getOrder(orderNumber.trim());
-      if (Array.isArray(data) && data.length > 0) {
-        setOrderItems(data);
-        // try to infer order id from first row
-        const maybeOrderId = data[0].OrderId ?? data[0].Id ?? null;
+      const apiResult = await getOrder(orderNumber.trim());
+      const rows = normalizeRows(apiResult);
+      if (rows.length > 0) {
+        setOrderItems(rows);
+        const maybeOrderId = rows[0].OrderId ?? rows[0].Id ?? null;
         setOrderId(maybeOrderId ? Number(maybeOrderId) : null);
+        const maybeBalance = Number(
+          rows[0].RemainingAmount ?? rows[0].Balance ?? 0,
+        );
+        setBalance(Number.isFinite(maybeBalance) ? maybeBalance : null);
         if (maybeOrderId) {
           const pays = await getPayments(Number(maybeOrderId));
           setPayments(pays ?? []);
@@ -56,9 +67,12 @@ function Account() {
     }
 
     try {
-      await savePayment(orderId, amt);
+      const paymentResult = await savePayment(orderId, amt);
       setMessage("Payment saved.");
       setAmountPaid("");
+      if (paymentResult?.RemainingAmount != null) {
+        setBalance(Number(paymentResult.RemainingAmount));
+      }
       const pays = await getPayments(orderId);
       setPayments(pays ?? []);
     } catch (err) {
@@ -87,6 +101,36 @@ function Account() {
       {orderItems.length > 0 && (
         <section>
           <h2>Order items</h2>
+          <div className="order-meta">
+            <span>Order ID: {orderId ?? "n/a"}</span>
+            {balance != null && (
+              <span>Remaining balance: {balance.toFixed(2)}</span>
+            )}
+            {orderNumber.trim() && (
+              <span className="order-actions">
+                <button
+                  onClick={() =>
+                    window.open(
+                      `/invoice?orderNumber=${encodeURIComponent(orderNumber)}`,
+                      "_blank",
+                    )
+                  }
+                >
+                  View Invoice
+                </button>
+                <button
+                  onClick={() =>
+                    window.open(
+                      `/print2?orderNumber=${encodeURIComponent(orderNumber)}`,
+                      "_blank",
+                    )
+                  }
+                >
+                  Print Receipt
+                </button>
+              </span>
+            )}
+          </div>
           <table>
             <thead>
               <tr>

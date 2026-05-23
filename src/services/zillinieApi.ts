@@ -67,6 +67,14 @@ export function savePayment(orderId: number, amountPaid: number) {
   return api.post("/payments", { orderId, amountPaid }).then((res) => res.data);
 }
 
+export function saveStatus(data: any) {
+  return api.post("/status", data).then((res) => res.data);
+}
+
+export function saveStaff(data: any) {
+  return api.post("/staff", data).then((res) => res.data);
+}
+
 export function getStaff() {
   return api.get("/staff").then((res) => res.data);
 }
