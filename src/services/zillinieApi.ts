@@ -105,6 +105,10 @@ export function getLookupData() {
   return api.get("/lookups").then((res) => res.data);
 }
 
+export function getSubcategories(categoryId: number) {
+  return api.get("/lookups/subcategories", { params: { categoryId } }).then((res) => res.data);
+}
+
 export function getStockUsageList() {
   return api.get("/products/0/stock").then((res) => res.data);
 }

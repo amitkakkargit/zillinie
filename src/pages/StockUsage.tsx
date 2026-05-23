@@ -3,6 +3,7 @@ import {
   getStockUsageList,
   getProducts,
   getLookupData,
+  getSubcategories,
   deductStock,
   saveProduct,
 } from "../services/zillinieApi";
@@ -24,6 +25,7 @@ export default function StockUsage() {
   const [stocks, setStocks] = useState<StockRecord[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [lookups, setLookups] = useState<any>(null);
+  const [subcategories, setSubcategories] = useState<any[]>([]);
   const [view, setView] = useState<"list" | "deduct" | "add">("list");
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
@@ -109,7 +111,6 @@ export default function StockUsage() {
     }
   }
 
-  const subcategories = lookups?.subcategories ?? lookups?.categories ?? [];
   const units = lookups?.units ?? [];
 
   return (
@@ -218,7 +219,16 @@ export default function StockUsage() {
             <select
               required
               value={addForm.categoryId}
-              onChange={(e) => setAddForm({ ...addForm, categoryId: e.target.value, subcategoryId: "" })}
+              onChange={async (e) => {
+                const catId = e.target.value;
+                setAddForm({ ...addForm, categoryId: catId, subcategoryId: "" });
+                if (catId) {
+                  const subs = await getSubcategories(Number(catId));
+                  setSubcategories(subs);
+                } else {
+                  setSubcategories([]);
+                }
+              }}
             >
               <option value="">-- Select Category --</option>
               {(lookups?.categories ?? []).map((c: any) => (
@@ -236,7 +246,7 @@ export default function StockUsage() {
               onChange={(e) => setAddForm({ ...addForm, subcategoryId: e.target.value })}
             >
               <option value="">-- Select Subcategory --</option>
-              {(lookups?.subcategories ?? subcategories).map((s: any) => (
+              {subcategories.map((s: any) => (
                 <option key={s.SubcategoryId ?? s.SubcategoryID} value={s.SubcategoryId ?? s.SubcategoryID}>
                   {s.SubcategoryName}
                 </option>
